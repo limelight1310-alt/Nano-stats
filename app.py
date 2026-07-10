@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 """Delegatable auth plugin -- capability tokens with cascading revocation."""
 
-from _future_ import annotations
+from __future__ import annotations
 
 import hashlib
 import hmac
