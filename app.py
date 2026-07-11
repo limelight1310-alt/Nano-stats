@@ -9,7 +9,7 @@ import json
 import time
 from typing import Any, cast
 
-from nest_core.types import AgentId, AuthContext, Token
+from local_types import AgentId, AuthContext, Token
 
 DEFAULT_TTL_SECONDS = 3600.0
 
@@ -21,20 +21,20 @@ class DelegationError(ValueError):
 class ScopeEscalationError(DelegationError):
     """Raised when a delegated token would carry scopes its parent lacks."""
 
-    def _init_(self, requested: list[str], allowed: list[str]) -> None:
+    def __init__(self, requested: list[str], allowed: list[str]) -> None:
         self.requested = requested
         self.allowed = allowed
         excess = sorted(set(requested) - set(allowed))
-        super()._init_(f"delegated scopes {excess} exceed parent scopes {sorted(allowed)}")
+        super().__init__(f"delegated scopes {excess} exceed parent scopes {sorted(allowed)}")
 
 
 class ExcessiveTtlError(DelegationError):
     """Raised when a delegated token's expiry would outlive its parent's."""
 
-    def _init_(self, child_expires_at: float, parent_expires_at: float) -> None:
+    def __init__(self, child_expires_at: float, parent_expires_at: float) -> None:
         self.child_expires_at = child_expires_at
         self.parent_expires_at = parent_expires_at
-        super()._init_(
+        super().__init__(
             f"child expiry {child_expires_at} exceeds parent expiry {parent_expires_at}"
         )
 
@@ -42,18 +42,18 @@ class ExcessiveTtlError(DelegationError):
 class RevokedAncestorError(DelegationError):
     """Raised when a token, or any ancestor in its delegation chain, was revoked."""
 
-    def _init_(self, token_id: str) -> None:
+    def __init__(self, token_id: str) -> None:
         self.token_id = token_id
-        super()._init_(f"token {token_id!r} was revoked (directly or via an ancestor)")
+        super().__init__(f"token {token_id!r} was revoked (directly or via an ancestor)")
 
 
 class AudienceMismatchError(DelegationError):
     """Raised when a token is presented by an agent other than its declared audience."""
 
-    def _init_(self, expected: AgentId, presented_by: AgentId) -> None:
+    def __init__(self, expected: AgentId, presented_by: AgentId) -> None:
         self.expected = expected
         self.presented_by = presented_by
-        super()._init_(f"token issued to {expected!r} was presented by {presented_by!r}")
+        super().__init__(f"token issued to {expected!r} was presented by {presented_by!r}")
 
 
 def _canonical(claims: dict[str, Any]) -> str:
@@ -64,7 +64,7 @@ def _canonical(claims: dict[str, Any]) -> str:
 class DelegatableAuth:
     """Capability-token auth with delegation and cascading revocation."""
 
-    def _init_(
+    def __init__(
         self,
         secret: bytes = b"nest-default-secret",
         clock: float | None = None,
@@ -208,7 +208,7 @@ def health():
 
 # You can add more routing endpoints here later if your assignment needs them!
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run(app, host="0.0.0.0", port=port)
